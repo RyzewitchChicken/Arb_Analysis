@@ -44,7 +44,7 @@ def find_arbitrage(df, home1, away1, home2, away2, result_col):
             return 100
 
     df[result_col] = df.apply(calculate_arbitrage, axis=1)
-
+    
     return df
 
 
@@ -162,11 +162,11 @@ def update_chart(drop1, drop2):
     arbcompare=find_arbitrage(arbcompare, arbcompare.columns[1], arbcompare.columns[2], arbcompare.columns[3], arbcompare.columns[4], 'arbbb')
         # Initialize figure
     print(arbcompare)
-
+    
 #fig.add_trace(go.Scatter(x=event_data['Timestamp'],y=event_data['ML-ML2 Betsson'],mode='markers',marker=dict(size=8, color='red', symbol='circle'),name="Arbing"))
     fig = go.Figure()
-    ranges = [(98, 99), (95, 97), (90, 94)]
-    colors = ['#6E6969', '#A19E9E','#080000']
+    ranges = [(98, 99), (95, 97), (90, 94),(80,89)]
+    colors = ['#6E6969', '#A19E9E','#080000','#750000']
     # Initialize figure
 
 
