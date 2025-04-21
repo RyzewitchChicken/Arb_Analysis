@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 import base64
 import datetime
 import io
-
+from datetime import timedelta
 app = Dash(__name__)
 server= app.server
 data={}
@@ -190,14 +190,34 @@ def update_chart(drop1, drop2):
         time_changes['Value_Changed'] = time_changes.iloc[:,1].diff().ne(0)  
 
         
-        groups = (time_changes['Value_Changed']).cumsum()  
-        #print(time_changes)
+        groups = (time_changes['Value_Changed']).cumsum()
 
-        grouped_df = time_changes.groupby(groups).filter(lambda x: x['Timestamp'].iloc[-1] - x['Timestamp'].iloc[0] >= pd.Timedelta(seconds=20))
-        start_times = grouped_df[grouped_df['Value_Changed'] | grouped_df.index == 0]['Timestamp'].tolist()
+        # Get valid groups (>= 20s duration AND has at least one value within 1s from group start)
+        valid_rows = []
+
+        for _, group in time_changes.groupby(groups):
+            if len(group) < 2:
+                continue
+            
+            start_time = group['Timestamp'].iloc[0]
+            end_time = group['Timestamp'].iloc[-1]
+            
+            if (end_time - start_time) < timedelta(seconds=10):
+                continue
+
+            # Check for another point within 1 second from the first
+            near_start = group[(group['Timestamp'] <= start_time + timedelta(seconds=1))]
+            if len(near_start) >= 2:
+                valid_rows.append(group)
+
+        # Combine all valid rows
+        if valid_rows:
+            grouped_df = pd.concat(valid_rows)
+        else:
+            grouped_df = pd.DataFrame()  # fallback
+        
         #print(grouped_df)
         #print(grouped_df[['Timestamp', 'ML-ML1 Betsson']])
-        #print(grouped_df)
         if not grouped_df.empty:
             start_times = []
             end_times = []
@@ -222,10 +242,13 @@ def update_chart(drop1, drop2):
             # Capture the last stable period
             start_times.append(start_time)
             end_times.append(grouped_df['Timestamp'].iloc[-1])
+            '''print('these start')
             print(start_times)
-            print(end_times)
+            print('these end')
+            print(end_times)'''
+            print(grouped_df)
             for start, end in zip(start_times, end_times):
-                fig.add_vrect(x0=start, x1=end, fillcolor="gray", opacity=0.4, line_width=0)        
+                fig.add_vrect(x0=start, x1=end, fillcolor="gray", opacity=0.4, line_width=0)       
 
     
     
