@@ -165,7 +165,7 @@ def update_chart(drop1, drop2):
     
 #fig.add_trace(go.Scatter(x=event_data['Timestamp'],y=event_data['ML-ML2 Betsson'],mode='markers',marker=dict(size=8, color='red', symbol='circle'),name="Arbing"))
     fig = go.Figure()
-    ranges = [(98, 99), (95, 97), (90, 94),(80,89)]
+    ranges = [(97.01, 99), (94.01, 97), (89.01, 94),(80,89)]
     colors = ['#6E6969', '#A19E9E','#080000','#750000']
     # Initialize figure
 
@@ -175,12 +175,13 @@ def update_chart(drop1, drop2):
         if column != 'arbbb' and column != 'Timestamp':
             fig.add_trace(go.Scatter(x=arbcompare['Timestamp'],y=arbcompare[column],name=column))
     arbs=0
+    arb_test=[]
     for i,r in enumerate(ranges):
         # Filter data for the range
-        event_data = arbcompare[(arbcompare['arbbb'] > r[0]) & (arbcompare['arbbb'] < r[1])]
+        event_data = arbcompare[(arbcompare['arbbb'] >= r[0]) & (arbcompare['arbbb'] <= r[1])]
         # Add trace to the figure
         fig.add_trace(go.Scatter(x=event_data['Timestamp'], y=event_data.iloc[:, 2], mode='markers', marker=dict(size=8, color=colors[i], symbol='circle'),
-                                name=f"Arb {100-r[1]}% -{100-r[0]}%"))
+                                name=f"Arb {100-r[1]}% - {100-int(r[0])}%"))
         #print(event_data.shape[0])
         
         arbs+=event_data.shape[0]
@@ -189,7 +190,7 @@ def update_chart(drop1, drop2):
         time_changes['time_diff']=time_changes['Timestamp'].diff().dt.total_seconds()
         time_changes['Value_Changed'] = time_changes.iloc[:,1].diff().ne(0)  
 
-        
+        #arb_test.append(event_data)
         groups = (time_changes['Value_Changed']).cumsum()
 
         # Get valid groups (>= 20s duration AND has at least one value within 1s from group start)
@@ -249,8 +250,9 @@ def update_chart(drop1, drop2):
             print(grouped_df)
             for start, end in zip(start_times, end_times):
                 fig.add_vrect(x0=start, x1=end, fillcolor="gray", opacity=0.4, line_width=0)       
-
     
+    #final_event_data = pd.concat(arb_test, ignore_index=True)
+    #final_event_data.to_csv('arbs.csv', index=False)
     
 
 
